@@ -97,5 +97,35 @@ namespace ReleaseControlLib
             }
         }
 
+        public static List<ControlledFile> GetFilesList(string root, ControlledApp parent)
+        {
+            try
+            {
+                List<ControlledFile> result = new List<ControlledFile>();
+                DirectoryInfo di = new DirectoryInfo(root);
+                foreach(var f in di.EnumerateFiles().ToList())
+                {
+                    result.Add(new ControlledFile()
+                    {
+                        Parent = parent,
+                        Path = f.FullName.Replace(parent.WorkingReleasePath + System.IO.Path.DirectorySeparatorChar, "")
+                    });
+                }
+                foreach(var d in di.EnumerateDirectories().ToList())
+                {
+                    var temp = GetFilesList(string.Format("{0}{1}{2}", root, System.IO.Path.DirectorySeparatorChar, d.Name),parent);
+                    if(temp!=null)
+                    {
+                        result.AddRange(temp);
+                    }
+                }
+                return result;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
+        }
+
     }
 }

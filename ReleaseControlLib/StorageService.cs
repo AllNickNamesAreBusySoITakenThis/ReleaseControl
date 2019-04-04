@@ -207,7 +207,7 @@ namespace ReleaseControlLib
                         mySqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                         mySqlConnection.Open();
                         MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
-                        mySqlCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE ID = {5}", Table,  app.Name, Encoding.UTF8.GetString(Encoding.Default.GetBytes(app.WorkingReleasePath)), Encoding.UTF8.GetString(Encoding.Default.GetBytes(app.ReleasePath)), Encoding.UTF8.GetString(Encoding.Default.GetBytes(app.ReleasePath)), app.Id);
+                        mySqlCommand.CommandText = string.Format("INSERT {0} (Name, WorkFolder, ReleaseFolder, ReestrFolder) VALUES ('{1}' ,'{2}', '{3}', '{4}')", Table, app.Name, app.WorkingReleasePath.Replace(Path.DirectorySeparatorChar, '+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'));
                         mySqlCommand.ExecuteNonQuery();
                         mySqlConnection.Close();
                         break;
@@ -378,7 +378,13 @@ namespace ReleaseControlLib
                             oleDbConnection.ConnectionString = string.Format("Provider={0}; Data Source={1};User ID={2};Password={3};Connection Timeout=3; ", Provider, Server, User, Password);
                             oleDbConnection.Open();
                             OleDbCommand oleDbCommand = oleDbConnection.CreateCommand();
-                            //oleDbCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE ID = {5}", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath, app.Id);
+                            oleDbCommand.CommandText = string.Format("CREATE TABLE {0}.dbo.{1} (ID INT IDENTITY," +
+                                                                  "Name VARCHAR(MAX) NULL," +
+                                                                  "WorkFolder VARCHAR(MAX) NULL" +
+                                                                  "ReleaseFolder VARCHAR(MAX) NULL," +
+                                                                  "ReestrFolder VARCHAR(MAX) NULL," +
+                                                                  "PCONSTRAINT PK_{1}_ID PRIMARY KEY CLUSTERED (ID))" +
+                                                                  "ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]", Database, Table);
                             oleDbCommand.ExecuteNonQuery();
                             oleDbConnection.Close();
                             break;
@@ -402,13 +408,13 @@ namespace ReleaseControlLib
                             sqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                             sqlConnection.Open();
                             SqlCommand sqlCommand = sqlConnection.CreateCommand();
-                            sqlCommand.CommandText = string.Format("CREATE TABLE {0}.{1} (ID int(11) UNSIGNED NOT NULL AUTO_INCREMENT,"+
-                                                                  "Name varchar(500) DEFAULT NULL,"+
-                                                                  "WorkFolder varchar(2000) DEFAULT NULL,"+
-                                                                  "ReleaseFolder varchar(2000) DEFAULT NULL,"+
-                                                                  "ReestrFolder varchar(2000) DEFAULT NULL,"+
-                                                                  "PRIMARY KEY (ID))"+
-                                                                  "ENGINE = INNODB, CHARACTER SET utf8, COLLATE utf8_general_ci, COMMENT = 'Контроль за актуальностью ППО';", Database, Table);
+                            sqlCommand.CommandText = string.Format("CREATE TABLE {0}.dbo.{1} (ID INT IDENTITY," +
+                                                                  "Name VARCHAR(MAX) NULL," +
+                                                                  "WorkFolder VARCHAR(MAX) NULL" +
+                                                                  "ReleaseFolder VARCHAR(MAX) NULL," +
+                                                                  "ReestrFolder VARCHAR(MAX) NULL," +
+                                                                  "PCONSTRAINT PK_{1}_ID PRIMARY KEY CLUSTERED (ID))" +
+                                                                  "ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]", Database, Table);
                             sqlCommand.ExecuteNonQuery();
                             sqlConnection.Close();
                             break;

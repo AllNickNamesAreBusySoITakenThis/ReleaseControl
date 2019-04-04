@@ -139,27 +139,7 @@ namespace ReleaseControlLib
                 result.ReestrPath = reestrPath;
                 result.Id = id;
                 var dir = new DirectoryInfo(workFolderPath);
-                var dirs = dir.EnumerateDirectories().ToList();
-                var files = dir.EnumerateFiles().ToList();
-                foreach (var f in files)
-                {
-                    result.Files.Add(new ControlledFile()
-                    {
-                        Parent = result,
-                        Path = f.Name
-                    });
-                }
-                foreach (var d in dirs)
-                {
-                    foreach (var f in d.EnumerateFiles().ToList())
-                    {
-                        result.Files.Add(new ControlledFile()
-                        {
-                            Parent = result,
-                            Path = string.Format("{0}{1}{2}", d.Name, Path.DirectorySeparatorChar, f.Name)
-                        });
-                    }
-                }
+                result.Files = new ObservableCollection<ControlledFile>(ControlledFile.GetFilesList(workFolderPath, result));
                 return result;
             }
             catch (Exception ex)

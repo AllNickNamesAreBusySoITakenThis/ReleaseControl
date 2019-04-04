@@ -16,7 +16,18 @@ namespace ReleaseControlLib
         string reestrPath = "";
         ObservableCollection<ControlledFile> files = new ObservableCollection<ControlledFile>();
         bool existInDB = false;
+        int id = 0;
 
+
+        public int Id
+        {
+            get { return id; }
+            set
+            {
+                id= value;
+                OnPropertyChanged("Id");
+            }
+        }
         public string Name
         {
             get
@@ -117,7 +128,7 @@ namespace ReleaseControlLib
         /// <param name="workFolderPath"></param>
         /// <param name="relFolderPath"></param>
         /// <returns></returns>
-        public static ControlledApp AddApp(string name, string workFolderPath, string relFolderPath)
+        public static ControlledApp AddApp(string name, string workFolderPath, string relFolderPath, string reestrPath)
         {
             try
             {
@@ -125,6 +136,7 @@ namespace ReleaseControlLib
                 result.Name = name;
                 result.ReleasePath = relFolderPath;
                 result.WorkingReleasePath = workFolderPath;
+                result.ReestrPath = reestrPath;
                 var dir = new DirectoryInfo(workFolderPath);
                 var dirs = dir.EnumerateDirectories().ToList();
                 var files = dir.EnumerateFiles().ToList();

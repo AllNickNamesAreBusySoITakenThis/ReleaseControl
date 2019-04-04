@@ -128,7 +128,7 @@ namespace ReleaseControlLib
         /// <param name="workFolderPath"></param>
         /// <param name="relFolderPath"></param>
         /// <returns></returns>
-        public static ControlledApp AddApp(string name, string workFolderPath, string relFolderPath, string reestrPath)
+        public static ControlledApp AddApp(string name, string workFolderPath, string relFolderPath, string reestrPath, int id)
         {
             try
             {
@@ -137,6 +137,7 @@ namespace ReleaseControlLib
                 result.ReleasePath = relFolderPath;
                 result.WorkingReleasePath = workFolderPath;
                 result.ReestrPath = reestrPath;
+                result.Id = id;
                 var dir = new DirectoryInfo(workFolderPath);
                 var dirs = dir.EnumerateDirectories().ToList();
                 var files = dir.EnumerateFiles().ToList();

@@ -39,7 +39,7 @@ namespace ReleaseControlLib
         /// Получить данные из базы данных
         /// </summary>
         /// <returns></returns>
-        public static string GetDataFromDb()
+        static string GetDataFromDb()
         {
             try
             {
@@ -51,11 +51,11 @@ namespace ReleaseControlLib
                         oleDbConnection.ConnectionString = string.Format("Provider={0}; Data Source={1};User ID={2};Password={3};Connection Timeout=3; ",Provider, Server, User, Password);
                         oleDbConnection.Open();
                         OleDbCommand oleDbCommand = oleDbConnection.CreateCommand();
-                        oleDbCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder From {0}", Table);
+                        oleDbCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder, ID From {0}", Table);
                         OleDbDataReader oleDbDataReader = oleDbCommand.ExecuteReader();
                         while (oleDbDataReader.Read())
                         {
-                            Apps.Add(ControlledApp.AddApp(oleDbDataReader["Name"].ToString(), oleDbDataReader["WorkFolder"].ToString(), oleDbDataReader["ReleaseFolder"].ToString(), oleDbDataReader["ReestrFolder"].ToString()));
+                            Apps.Add(ControlledApp.AddApp(oleDbDataReader["Name"].ToString(), oleDbDataReader["WorkFolder"].ToString(), oleDbDataReader["ReleaseFolder"].ToString(), oleDbDataReader["ReestrFolder"].ToString(), Convert.ToInt32(oleDbDataReader["ID"].ToString())));
                         }
                         oleDbConnection.Close();
                         break;
@@ -64,11 +64,11 @@ namespace ReleaseControlLib
                         mySqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                         mySqlConnection.Open();
                         MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
-                        mySqlCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder From {0}", Table);
+                        mySqlCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder, ID From {0}", Table);
                         MySqlDataReader mySqlDataReader = mySqlCommand.ExecuteReader();
                         while (mySqlDataReader.Read())
                         {
-                            Apps.Add(ControlledApp.AddApp(mySqlDataReader["Name"].ToString(), mySqlDataReader["WorkFolder"].ToString(), mySqlDataReader["ReleaseFolder"].ToString(), mySqlDataReader["ReestrFolder"].ToString()));
+                            Apps.Add(ControlledApp.AddApp(mySqlDataReader["Name"].ToString(), mySqlDataReader["WorkFolder"].ToString().Replace('+',Path.DirectorySeparatorChar ), mySqlDataReader["ReleaseFolder"].ToString().Replace('+', Path.DirectorySeparatorChar), mySqlDataReader["ReestrFolder"].ToString().Replace('+', Path.DirectorySeparatorChar), Convert.ToInt32(mySqlDataReader["ID"].ToString())));
                         }
                         mySqlConnection.Close();
                         break;
@@ -77,14 +77,18 @@ namespace ReleaseControlLib
                         sqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                         sqlConnection.Open();
                         SqlCommand sqlCommand = sqlConnection.CreateCommand();
-                        sqlCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder From {0}", Table);
+                        sqlCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder, ID From {0}", Table);
                         SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
                         while (sqlDataReader.Read())
                         {
-                            Apps.Add(ControlledApp.AddApp(sqlDataReader["Name"].ToString(), sqlDataReader["WorkFolder"].ToString(), sqlDataReader["ReleaseFolder"].ToString(), sqlDataReader["ReestrFolder"].ToString()));
+                            Apps.Add(ControlledApp.AddApp(sqlDataReader["Name"].ToString(), sqlDataReader["WorkFolder"].ToString(), sqlDataReader["ReleaseFolder"].ToString(), sqlDataReader["ReestrFolder"].ToString(), Convert.ToInt32(sqlDataReader["ID"].ToString())));
                         }
                         sqlConnection.Close();
                         break;
+                }
+                foreach(var app in Apps)
+                {
+                    app.ExistInDb = true;
                 }
                 return "OK";
             }
@@ -98,7 +102,7 @@ namespace ReleaseControlLib
         /// Получить данные о приложениях из XML файла
         /// </summary>
         /// <returns></returns>
-        public static string GetDataFromXml()
+        static string GetDataFromXml()
         {
             try
             {
@@ -106,6 +110,7 @@ namespace ReleaseControlLib
                 if (File.Exists(FilePath))
                 {
                     XDocument xdoc = XDocument.Load(FilePath);
+                    var counter = 0;
                     foreach (XElement app in xdoc.Element("Applications").Elements("App"))
                     {
                         XElement name = app.Element("Name");
@@ -116,8 +121,10 @@ namespace ReleaseControlLib
                             name.Value.ToString(),
                             workFolder.Value==null?"":workFolder.Value.ToString(),
                             releaseFolder==null?"":releaseFolder.Value.ToString(),
-                            reestrFolder==null?"":reestrFolder.Value.ToString()
+                            reestrFolder==null?"":reestrFolder.Value.ToString(),
+                            counter
                             );
+                        counter++;
                         Apps.Add(tApp);
                     }
                 }
@@ -134,7 +141,7 @@ namespace ReleaseControlLib
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static string AddDataToDb(ControlledApp app)
+        static string AddDataToDb(ControlledApp app)
         {
             try
             {
@@ -154,7 +161,7 @@ namespace ReleaseControlLib
                         mySqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                         mySqlConnection.Open();
                         MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
-                        mySqlCommand.CommandText = string.Format("INSERT {0} (Name, WorkFolder, ReleaseFolder, ReestrFolder) VALUES ('{1}' ,'{2}', '{3}', '{4}')", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath);
+                        mySqlCommand.CommandText = string.Format("INSERT {0} (Name, WorkFolder, ReleaseFolder, ReestrFolder) VALUES ('{1}' ,'{2}', '{3}', '{4}')", Table, app.Name, app.WorkingReleasePath.Replace(Path.DirectorySeparatorChar,'+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'));
                         mySqlCommand.ExecuteNonQuery();
                         mySqlConnection.Close();
                         break;
@@ -180,7 +187,7 @@ namespace ReleaseControlLib
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static string UpdateDataInDb(ControlledApp app)
+        static string UpdateDataInDb(ControlledApp app)
         {
             try
             {
@@ -191,7 +198,7 @@ namespace ReleaseControlLib
                         oleDbConnection.ConnectionString = string.Format("Provider={0}; Data Source={1};User ID={2};Password={3};Connection Timeout=3; ", Provider, Server, User, Password);
                         oleDbConnection.Open();
                         OleDbCommand oleDbCommand = oleDbConnection.CreateCommand();
-                        oleDbCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE Name = '{1}')", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath);
+                        oleDbCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE ID = {5}", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath, app.Id);
                         oleDbCommand.ExecuteNonQuery();
                         oleDbConnection.Close();
                         break;
@@ -200,7 +207,7 @@ namespace ReleaseControlLib
                         mySqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                         mySqlConnection.Open();
                         MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
-                        mySqlCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE Name = '{1}')", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath);
+                        mySqlCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE ID = {5}", Table,  app.Name, Encoding.UTF8.GetString(Encoding.Default.GetBytes(app.WorkingReleasePath)), Encoding.UTF8.GetString(Encoding.Default.GetBytes(app.ReleasePath)), Encoding.UTF8.GetString(Encoding.Default.GetBytes(app.ReleasePath)), app.Id);
                         mySqlCommand.ExecuteNonQuery();
                         mySqlConnection.Close();
                         break;
@@ -209,7 +216,7 @@ namespace ReleaseControlLib
                         sqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                         sqlConnection.Open();
                         SqlCommand sqlCommand = sqlConnection.CreateCommand();
-                        sqlCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE Name = '{1}')", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath);
+                        sqlCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE ID = {5}", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath, app.Id);
                         sqlCommand.ExecuteNonQuery();
                         sqlConnection.Close();
                         break;
@@ -225,7 +232,7 @@ namespace ReleaseControlLib
         /// Сохранить все данные в файле XML
         /// </summary>
         /// <returns>Errors</returns>
-        public static string SaveToXml()
+        static string SaveToXml()
         {
             try
             {
@@ -254,10 +261,64 @@ namespace ReleaseControlLib
                 return ex.Message;
             }
             
+        }        
+        /// <summary>
+        /// Проверка на полноту введенных данных
+        /// </summary>
+        /// <returns>True - данные введены в полном объеме, False - нет</returns>
+        public static bool CheckSettings()
+        {
+            //bool verdict = true;
+            switch(StorageType)
+            {
+                case StorageTypes.Database:
+                    switch(ConnectionType)
+                    {
+                        case ConnectionTypes.OleDb:
+                            if (Provider == "")
+                                return false;
+                            break;
+                        case ConnectionTypes.OracleMySql:
+                            if (Port == "")
+                                return false;
+                            break;                        
+                    }
+                    if(Server=="" | Database=="" | Table=="" | User=="")
+                    {
+                        return false;
+                    }
+                    break;
+                case StorageTypes.XML:
+                    if(FilePath=="")
+                    {
+                        return false;
+                    }
+                    break;
+            }
+            return true;
         }
-
-        //TODO: Проверка на полноту введенных данных
-
+        /// <summary>
+        /// Получить данные
+        /// </summary>
+        /// <returns></returns>
+        public static string Get()
+        {
+            try
+            {
+                switch(StorageType)
+                {
+                    case StorageTypes.Database:
+                        return GetDataFromDb();
+                    case StorageTypes.XML:
+                        return GetDataFromXml();
+                }
+                return "OK";
+            }
+            catch(Exception ex)
+            {
+                return ex.Message;
+            }
+        }
         /// <summary>
         /// Сохранить данные 
         /// </summary>
@@ -267,26 +328,33 @@ namespace ReleaseControlLib
             try
             {
                 string errors = "";
-                switch (StorageType)
+                if(CheckSettings())
                 {
-                    case StorageTypes.Database:
-                        foreach (var app in Apps)
-                        {
-                            if (app.ExistInDb)
+                    switch (StorageType)
+                    {
+                        case StorageTypes.Database:
+                            foreach (var app in Apps)
                             {
-                                var er = UpdateDataInDb(app);
-                                errors += er != "OK" ? er : "";
+                                if (app.ExistInDb)
+                                {
+                                    var er = UpdateDataInDb(app);
+                                    errors += er != "OK" ? er : "";
+                                }
+                                else
+                                {
+                                    var er = AddDataToDb(app);
+                                    errors += er != "OK" ? er : "";
+                                }
                             }
-                            else
-                            {
-                                var er = AddDataToDb(app);
-                                errors += er != "OK" ? er : "";
-                            }
-                        }
-                        break;
-                    case StorageTypes.XML:
-                        return SaveToXml();
-                        
+                            break;
+                        case StorageTypes.XML:
+                            return SaveToXml();
+
+                    }
+                }
+                else
+                {
+                    errors = "Настройка произведена не полностью";
                 }
                 return errors;
             }
@@ -295,6 +363,67 @@ namespace ReleaseControlLib
                 return ex.Message;
             }
             
+        }
+
+        public static string CreateDbTable()
+        {
+            try
+            {
+                if(CheckSettings())
+                {
+                    switch (ConnectionType)
+                    {
+                        case ConnectionTypes.OleDb:
+                            OleDbConnection oleDbConnection = new OleDbConnection();
+                            oleDbConnection.ConnectionString = string.Format("Provider={0}; Data Source={1};User ID={2};Password={3};Connection Timeout=3; ", Provider, Server, User, Password);
+                            oleDbConnection.Open();
+                            OleDbCommand oleDbCommand = oleDbConnection.CreateCommand();
+                            //oleDbCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE ID = {5}", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath, app.Id);
+                            oleDbCommand.ExecuteNonQuery();
+                            oleDbConnection.Close();
+                            break;
+                        case ConnectionTypes.OracleMySql:
+                            MySqlConnection mySqlConnection = new MySqlConnection();
+                            mySqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
+                            mySqlConnection.Open();
+                            MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
+                            mySqlCommand.CommandText = string.Format("CREATE TABLE {0}.{1} (ID int(11) UNSIGNED NOT NULL AUTO_INCREMENT," +
+                                                                  "Name varchar(500) DEFAULT NULL," +
+                                                                  "WorkFolder varchar(2000) DEFAULT NULL," +
+                                                                  "ReleaseFolder varchar(2000) DEFAULT NULL," +
+                                                                  "ReestrFolder varchar(2000) DEFAULT NULL," +
+                                                                  "PRIMARY KEY (ID))" +
+                                                                  "ENGINE = INNODB, CHARACTER SET utf8, COLLATE utf8_general_ci, COMMENT = 'Контроль за актуальностью ППО';", Database, Table);
+                            mySqlCommand.ExecuteNonQuery();
+                            mySqlConnection.Close();
+                            break;
+                        case ConnectionTypes.Sql:
+                            SqlConnection sqlConnection = new SqlConnection();
+                            sqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
+                            sqlConnection.Open();
+                            SqlCommand sqlCommand = sqlConnection.CreateCommand();
+                            sqlCommand.CommandText = string.Format("CREATE TABLE {0}.{1} (ID int(11) UNSIGNED NOT NULL AUTO_INCREMENT,"+
+                                                                  "Name varchar(500) DEFAULT NULL,"+
+                                                                  "WorkFolder varchar(2000) DEFAULT NULL,"+
+                                                                  "ReleaseFolder varchar(2000) DEFAULT NULL,"+
+                                                                  "ReestrFolder varchar(2000) DEFAULT NULL,"+
+                                                                  "PRIMARY KEY (ID))"+
+                                                                  "ENGINE = INNODB, CHARACTER SET utf8, COLLATE utf8_general_ci, COMMENT = 'Контроль за актуальностью ППО';", Database, Table);
+                            sqlCommand.ExecuteNonQuery();
+                            sqlConnection.Close();
+                            break;
+                    }
+                    return "OK";
+                }
+                else
+                {
+                    return "Настройка произведена не полностью";
+                }
+            }
+            catch(Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 

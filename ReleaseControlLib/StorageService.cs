@@ -229,6 +229,52 @@ namespace ReleaseControlLib
             }
         }
         /// <summary>
+        /// Удалить данные из таблицы
+        /// </summary>
+        /// <param name="app"></param>
+        /// <returns></returns>
+        static string RemoveDataFormDb(ControlledApp app)
+        {
+            try
+            {
+                switch (ConnectionType)
+                {
+                    case ConnectionTypes.OleDb:
+                        OleDbConnection oleDbConnection = new OleDbConnection();
+                        oleDbConnection.ConnectionString = string.Format("Provider={0}; Data Source={1};User ID={2};Password={3};Connection Timeout=3; ", Provider, Server, User, Password);
+                        oleDbConnection.Open();
+                        OleDbCommand oleDbCommand = oleDbConnection.CreateCommand();
+                        oleDbCommand.CommandText = string.Format("DELETE FROM {0} WHERE ID = {1}", Table, app.Id);
+                        oleDbCommand.ExecuteNonQuery();
+                        oleDbConnection.Close();
+                        break;
+                    case ConnectionTypes.OracleMySql:
+                        MySqlConnection mySqlConnection = new MySqlConnection();
+                        mySqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
+                        mySqlConnection.Open();
+                        MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
+                        mySqlCommand.CommandText = string.Format("DELETE FROM {0} WHERE ID = {1}", Table, app.Id);
+                        mySqlCommand.ExecuteNonQuery();
+                        mySqlConnection.Close();
+                        break;
+                    case ConnectionTypes.Sql:
+                        SqlConnection sqlConnection = new SqlConnection();
+                        sqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
+                        sqlConnection.Open();
+                        SqlCommand sqlCommand = sqlConnection.CreateCommand();
+                        sqlCommand.CommandText = string.Format("DELETE FROM {0} WHERE ID = {1}", Table, app.Id);
+                        sqlCommand.ExecuteNonQuery();
+                        sqlConnection.Close();
+                        break;
+                }
+                return "OK";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+        /// <summary>
         /// Сохранить все данные в файле XML
         /// </summary>
         /// <returns>Errors</returns>
@@ -364,6 +410,41 @@ namespace ReleaseControlLib
             }
             
         }
+        /// <summary>
+        /// Удалить приложение
+        /// </summary>
+        /// <param name="appToRemove"></param>
+        /// <returns></returns>
+        public static string RemoveApp(ControlledApp appToRemove)
+        {
+            try
+            {
+                for(int i=0;i<Apps.Count;i++)
+                {
+                    if(appToRemove==Apps[i])
+                    {
+                        Apps.RemoveAt(i);
+                        break;
+                    }
+                }
+                switch(StorageType)
+                {
+                    case StorageTypes.Database:
+                        RemoveDataFormDb(appToRemove);
+                        break;
+                    case StorageTypes.XML:
+                        SaveToXml();
+                        break;
+                }
+                return "OK";
+            }
+            catch(Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+
 
         public static string CreateDbTable()
         {

@@ -105,11 +105,14 @@ namespace ReleaseControlLib
                 DirectoryInfo di = new DirectoryInfo(root);
                 foreach(var f in di.EnumerateFiles().ToList())
                 {
-                    result.Add(new ControlledFile()
+                    if(!StorageService.ForbiddenExt.Contains(f.Extension))
                     {
-                        Parent = parent,
-                        Path = f.FullName.Replace(parent.WorkingReleasePath + System.IO.Path.DirectorySeparatorChar, "")
-                    });
+                        result.Add(new ControlledFile()
+                        {
+                            Parent = parent,
+                            Path = f.FullName.Replace(parent.WorkingReleasePath + System.IO.Path.DirectorySeparatorChar, "")
+                        });
+                    }                    
                 }
                 foreach(var d in di.EnumerateDirectories().ToList())
                 {

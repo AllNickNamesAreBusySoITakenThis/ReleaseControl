@@ -5,8 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ControlApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="MainWindow" Height="450" Width="800" WindowStyle="None">
+	<Window.DataContext>
+		<local:MainWindowViewModel/>
+	</Window.DataContext>
+	<Window.Resources>
+		
+	</Window.Resources>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="auto"/>
+		</Grid.RowDefinitions>
+		<Menu x:Name="menu" Height="25" FontFamily="Verdana" FontSize="16" Background="Wheat">			
+			<MenuItem Header="Файл" VerticalAlignment="Center" Margin="1">
+				<MenuItem Header="Добавить приложение" Background="{Binding Background, ElementName=menu}" BorderThickness="0"/>
+			</MenuItem>
+		</Menu>
+		<DataGrid Grid.Row="1" ItemsSource="{Binding MyApps}" AutoGenerateColumns="False">
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="Название" Binding="{Binding Path=Name}"/>
+			</DataGrid.Columns>			
+		</DataGrid>
+	</Grid>
 </Window>

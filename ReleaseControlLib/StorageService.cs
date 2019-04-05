@@ -27,12 +27,37 @@ namespace ReleaseControlLib
         public static string Port { get; set; } = "";
         public static StorageTypes StorageType { get; set; } = StorageTypes.Database;
         public static string FilePath { get; set; } = "";
+        public static ObservableCollection<string> ForbiddenExt { get; set; } = new ObservableCollection<string>();
         public static ObservableCollection<ControlledApp> Apps
         {
             get { return apps; }
             set
             {
                 apps = value;
+            }
+        }
+        
+        static StorageService()
+        {
+            ForbiddenExt.CollectionChanged += ForbiddenExt_CollectionChanged;
+        }
+        private static void ForbiddenExt_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            CheckData();
+        }
+
+        static void CheckData()
+        {
+            foreach(var app in Apps)
+            {
+                for(int i=0;i<app.Files.Count;i++)
+                {
+                    if(ForbiddenExt.Contains(new FileInfo(app.WorkingReleasePath+Path.DirectorySeparatorChar+app.Files[i].Path).Extension))
+                    {
+                        app.Files.RemoveAt(i);
+                        i = -1;
+                    }
+                }
             }
         }
         /// <summary>
@@ -443,9 +468,10 @@ namespace ReleaseControlLib
                 return ex.Message;
             }
         }
-
-
-
+        /// <summary>
+        /// Создать таблицу в БД
+        /// </summary>
+        /// <returns></returns>
         public static string CreateDbTable()
         {
             try
@@ -512,6 +538,8 @@ namespace ReleaseControlLib
                 return ex.Message;
             }
         }
+
+
     }
 
     public enum ConnectionTypes

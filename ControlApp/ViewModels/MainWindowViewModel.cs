@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using System.Windows.Input;
+using ReleaseControlLib;
 
 namespace ControlApp
 {
@@ -16,7 +17,26 @@ namespace ControlApp
             get { return ReleaseControlLib.StorageService.Apps; }
             set { ReleaseControlLib.StorageService.Apps = value; }
         }
+
+        public MainWindowViewModel()
+        {
+            Service.ReadSettings();
+            StorageService.Get();
+        }
+
         #region Команды
+
+        #region Показать настройки
+        public ICommand ExitCommand
+        {
+            get { return new RelayCommand(ExecuteExit); }
+        }
+
+        void ExecuteExit()
+        {
+            App.Current.Shutdown();
+        }
+        #endregion
 
         #region Показать настройки
         public ICommand ShowSettingsCommand

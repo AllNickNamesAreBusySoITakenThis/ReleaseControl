@@ -28,5 +28,6 @@
 				<DataGridTextColumn Header="Название" Binding="{Binding Path=Name}"/>
 			</DataGrid.Columns>			
 		</DataGrid>
+		<Button Grid.Row="2" Command="{Binding ExitCommand}" Content="Выход" Width="125" Margin="5,5,5,5" HorizontalAlignment="Right"/>
 	</Grid>
 </Window>

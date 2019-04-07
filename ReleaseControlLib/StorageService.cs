@@ -502,7 +502,7 @@ namespace ReleaseControlLib
                                                                   "WorkFolder VARCHAR(MAX) NULL," +
                                                                   "ReleaseFolder VARCHAR(MAX) NULL," +
                                                                   "ReestrFolder VARCHAR(MAX) NULL," +
-                                                                  "PCONSTRAINT PK_{1}_ID PRIMARY KEY CLUSTERED (ID))" +
+                                                                  "PRIMARY KEY CLUSTERED (ID))" +
                                                                   "ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]", Database, Table);
                             oleDbCommand.ExecuteNonQuery();
                             oleDbConnection.Close();
@@ -535,7 +535,7 @@ namespace ReleaseControlLib
                                                                   "WorkFolder VARCHAR(MAX) NULL," +
                                                                   "ReleaseFolder VARCHAR(MAX) NULL," +
                                                                   "ReestrFolder VARCHAR(MAX) NULL," +
-                                                                  " PRIMARY KEY CLUSTERED (ID))" +
+                                                                  "PRIMARY KEY CLUSTERED (ID))" +
                                                                   "ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]", Database, Table);
                             sqlCommand.ExecuteNonQuery();
                             sqlConnection.Close();

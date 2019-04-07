@@ -99,7 +99,10 @@ namespace ReleaseControlLib
                         break;
                     case ConnectionTypes.Sql:
                         SqlConnection sqlConnection = new SqlConnection();
-                        sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server,  User, Database, Password);
+                        if (Password != "")
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server, User, Database, Password);
+                        else
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};Initial Catalog={1}; Integrated Security = True;", Server, Database);
                         sqlConnection.Open();
                         SqlCommand sqlCommand = sqlConnection.CreateCommand();
                         sqlCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder, ID From {0}", Table);
@@ -192,7 +195,10 @@ namespace ReleaseControlLib
                         break;
                     case ConnectionTypes.Sql:
                         SqlConnection sqlConnection = new SqlConnection();
-                        sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server,  User, Database, Password);
+                        if (Password != "")
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server, User, Database, Password);
+                        else
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};Initial Catalog={1}; Integrated Security = True;", Server, Database);
                         sqlConnection.Open();
                         SqlCommand sqlCommand = sqlConnection.CreateCommand();
                         sqlCommand.CommandText = string.Format("INSERT {0} (Name, WorkFolder, ReleaseFolder, ReestrFolder) VALUES ('{1}' ,'{2}', '{3}', '{4}')", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath);
@@ -238,7 +244,10 @@ namespace ReleaseControlLib
                         break;
                     case ConnectionTypes.Sql:
                         SqlConnection sqlConnection = new SqlConnection();
-                        sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server,  User, Database, Password);
+                        if (Password != "")
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server, User, Database, Password);
+                        else
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};Initial Catalog={1}; Integrated Security = True;", Server, Database);
                         sqlConnection.Open();
                         SqlCommand sqlCommand = sqlConnection.CreateCommand();
                         sqlCommand.CommandText = string.Format("UPDATE {0} SET Name='{1}', WorkFolder='{2}', ReleaseFolder='{3}', ReestrFolder='{4}' WHERE ID = {5}", Table, app.Name, app.WorkingReleasePath, app.ReleasePath, app.ReleasePath, app.Id);
@@ -284,7 +293,10 @@ namespace ReleaseControlLib
                         break;
                     case ConnectionTypes.Sql:
                         SqlConnection sqlConnection = new SqlConnection();
-                        sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server,  User, Database, Password);
+                        if(Password!="")
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server,  User, Database, Password);
+                        else
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};Initial Catalog={1}; Integrated Security = True;", Server, Database);
                         sqlConnection.Open();
                         SqlCommand sqlCommand = sqlConnection.CreateCommand();
                         sqlCommand.CommandText = string.Format("DELETE FROM {0} WHERE ID = {1}", Table, app.Id);
@@ -354,7 +366,7 @@ namespace ReleaseControlLib
                                 return false;
                             break;                        
                     }
-                    if(Server=="" | Database=="" | Table=="" | User=="")
+                    if (Server == "" | Database == "" | Table == "" | (User == "" & Password != "") | (User != "" & Password==""))
                     {
                         return false;
                     }
@@ -487,7 +499,7 @@ namespace ReleaseControlLib
                             OleDbCommand oleDbCommand = oleDbConnection.CreateCommand();
                             oleDbCommand.CommandText = string.Format("CREATE TABLE {0}.dbo.{1} (ID INT IDENTITY," +
                                                                   "Name VARCHAR(MAX) NULL," +
-                                                                  "WorkFolder VARCHAR(MAX) NULL" +
+                                                                  "WorkFolder VARCHAR(MAX) NULL," +
                                                                   "ReleaseFolder VARCHAR(MAX) NULL," +
                                                                   "ReestrFolder VARCHAR(MAX) NULL," +
                                                                   "PCONSTRAINT PK_{1}_ID PRIMARY KEY CLUSTERED (ID))" +
@@ -512,15 +524,18 @@ namespace ReleaseControlLib
                             break;
                         case ConnectionTypes.Sql:
                             SqlConnection sqlConnection = new SqlConnection();
-                            sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server,  User, Database, Password);
+                            if (Password != "")
+                                sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server, User, Database, Password);
+                            else
+                                sqlConnection.ConnectionString = string.Format("Data Source={0};Initial Catalog={1}; Integrated Security = True;", Server, Database);
                             sqlConnection.Open();
                             SqlCommand sqlCommand = sqlConnection.CreateCommand();
                             sqlCommand.CommandText = string.Format("CREATE TABLE {0}.dbo.{1} (ID INT IDENTITY," +
                                                                   "Name VARCHAR(MAX) NULL," +
-                                                                  "WorkFolder VARCHAR(MAX) NULL" +
+                                                                  "WorkFolder VARCHAR(MAX) NULL," +
                                                                   "ReleaseFolder VARCHAR(MAX) NULL," +
                                                                   "ReestrFolder VARCHAR(MAX) NULL," +
-                                                                  "PCONSTRAINT PK_{1}_ID PRIMARY KEY CLUSTERED (ID))" +
+                                                                  " PRIMARY KEY CLUSTERED (ID))" +
                                                                   "ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]", Database, Table);
                             sqlCommand.ExecuteNonQuery();
                             sqlConnection.Close();

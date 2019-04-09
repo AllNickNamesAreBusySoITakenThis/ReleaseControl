@@ -29,8 +29,7 @@ namespace ReleaseControlLib
             set
             {
                 path = value;
-                CurrentHash = HashService.ComputeMD5Checksum(Parent.WorkingReleasePath + System.IO.Path.DirectorySeparatorChar + path);
-                ReleaseHash = HashService.ComputeMD5Checksum(Parent.ReleasePath + System.IO.Path.DirectorySeparatorChar + path);
+                UpdateHash();
                 OnPropertyChanged("Path");
             }
         }
@@ -96,7 +95,11 @@ namespace ReleaseControlLib
                 return ex.Message;
             }
         }
-
+        public void UpdateHash()
+        {
+            CurrentHash = HashService.ComputeMD5Checksum(Parent.WorkingReleasePath + System.IO.Path.DirectorySeparatorChar + path);
+            ReleaseHash = HashService.ComputeMD5Checksum(Parent.ReleasePath + System.IO.Path.DirectorySeparatorChar + path);
+        }
         public static List<ControlledFile> GetFilesList(string root, ControlledApp parent)
         {
             try

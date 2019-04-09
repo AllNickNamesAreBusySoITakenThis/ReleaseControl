@@ -16,6 +16,7 @@ namespace ReleaseControlLib
         string reestrPath = "";
         ObservableCollection<ControlledFile> files = new ObservableCollection<ControlledFile>();
         bool existInDB = false;
+        bool upToDate = false;
         int id = 0;
 
 
@@ -51,6 +52,7 @@ namespace ReleaseControlLib
             {
                 workingReleasePath = value;
                 OnPropertyChanged("WorkingReleasePath");
+                IsUpToDate = CheckFiles();
             }
         }
 
@@ -64,6 +66,7 @@ namespace ReleaseControlLib
             {
                 releasePath = value;
                 OnPropertyChanged("ReleasePath");
+                IsUpToDate = CheckFiles();
             }
         }
 
@@ -77,6 +80,7 @@ namespace ReleaseControlLib
             {
                 reestrPath = value;
                 OnPropertyChanged("ReestrPath");
+                IsUpToDate = CheckFiles();
             }
         }
 
@@ -84,12 +88,12 @@ namespace ReleaseControlLib
         {
             get
             {
-                foreach (var file in Files)
-                {
-                    if (!file.IsUpToDate)
-                        return false;
-                }
-                return true;
+                return upToDate;
+            }
+            private set
+            {
+                upToDate = value;
+                OnPropertyChanged("IsUpToDate");
             }
         }
 
@@ -113,6 +117,7 @@ namespace ReleaseControlLib
             {
                 files = value;
                 OnPropertyChanged("Files");
+                IsUpToDate = CheckFiles();
             }
         }
 
@@ -120,6 +125,19 @@ namespace ReleaseControlLib
         void OnPropertyChanged(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        bool CheckFiles()
+        {
+            foreach(var file in Files)
+            {
+                file.UpdateHash();
+                if(!file.IsUpToDate)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         /// <summary>
         /// Добавлению подлежат все файлы в указанном каталоге и в директориях первого уровня вложенности

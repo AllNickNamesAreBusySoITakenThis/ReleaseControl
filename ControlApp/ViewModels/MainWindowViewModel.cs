@@ -39,7 +39,7 @@ namespace ControlApp
         public MainWindowViewModel()
         {
             Service.ReadSettings();
-            StorageService.Get();
+            MainModel.GetApps();
         }
 
         #region Команды

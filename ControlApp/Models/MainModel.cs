@@ -29,13 +29,14 @@ namespace ControlApp
         }
 
 
-        public static void GetApps()
+        public async static void GetApps()
         {
-            string result = StorageService.Get();
-            if (result != "OK")
-            {
-                logger.Error("Ошибка при получени данных: {0}", result);
-            }
+            string result = "";
+            await new Task(()=>StorageService.Get());
+            //if (result != "OK")
+            //{
+            //    logger.Error("Ошибка при получени данных: {0}", result);
+            //}
         }
 
         public static void Import()

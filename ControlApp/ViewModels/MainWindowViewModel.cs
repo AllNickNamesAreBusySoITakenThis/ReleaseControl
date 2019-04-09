@@ -12,10 +12,28 @@ namespace ControlApp
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        ControlledApp selecetdapp = new ControlledApp();
+
         public ObservableCollection<ReleaseControlLib.ControlledApp> MyApps
         {
-            get { return ReleaseControlLib.StorageService.Apps; }
+            get
+            {
+                if (StorageService.Apps != null)
+                    return ReleaseControlLib.StorageService.Apps;
+                else
+                    return new ObservableCollection<ControlledApp>();
+            }
             set { ReleaseControlLib.StorageService.Apps = value; }
+        }
+
+        public ControlledApp SelectedApp
+        {
+            get { return selecetdapp; }
+            set
+            {
+                selecetdapp = value;
+                RaisePropertyChanged("SelectedApp");
+            }
         }
 
         public MainWindowViewModel()
@@ -47,6 +65,30 @@ namespace ControlApp
         void ExecuteShowSettings()
         {
             MainModel.ShowSettings();
+        }
+        #endregion
+
+        #region Экспортировать данные
+        public ICommand ExportCommand
+        {
+            get { return new RelayCommand(ExecuteExport); }
+        }
+
+        void ExecuteExport()
+        {
+            MainModel.ExportToXml();
+        }
+        #endregion
+
+        #region Импортировать данные
+        public ICommand ImportCommand
+        {
+            get { return new RelayCommand(ExecuteImport); }
+        }
+
+        void ExecuteImport()
+        {
+            MainModel.Import();
         }
         #endregion
 

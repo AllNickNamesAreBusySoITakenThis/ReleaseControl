@@ -8,6 +8,8 @@ using System.Xml;
 using System.Xml.Linq;
 using ReleaseControlLib;
 using NLog;
+using System.Collections.ObjectModel;
+
 
 namespace ControlApp
 {
@@ -34,7 +36,8 @@ namespace ControlApp
             result.Add("Database table name", StorageService.Table);
             result.Add("Database user", StorageService.User);
             result.Add("Storage type", StorageService.StorageType.ToString());
-            result.Add("Database type", StorageService.ConnectionType.ToString());            
+            result.Add("Database type", StorageService.ConnectionType.ToString());
+            result.Add("Forbidden extentions", CollectionToString(StorageService.ForbiddenExt));
             return result;
         }
         /// <summary>
@@ -55,7 +58,7 @@ namespace ControlApp
                 StorageService.User = dictionary["Database user"].ToString();
                 StorageService.StorageType = (StorageTypes)Enum.Parse(typeof(StorageTypes),dictionary["Storage type"].ToString());
                 StorageService.ConnectionType = (ConnectionTypes)Enum.Parse(typeof(ConnectionTypes), dictionary["Database type"].ToString());
-                
+                StorageService.ForbiddenExt = CollectionFromString(dictionary["Forbidden extentions"].ToString());
             }
             catch (Exception ex)
             {
@@ -63,6 +66,28 @@ namespace ControlApp
             }
 
         }
+
+        public static string CollectionToString(ObservableCollection<string> collection)
+        {
+            string res = "";
+            foreach(var item in collection)
+            {
+                res += string.Format("{0};", item);
+            }
+            return res;
+        }
+
+        public static ObservableCollection<string> CollectionFromString(string source)
+        {
+            ObservableCollection<string> result = new ObservableCollection<string>();
+            var sSource = source.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach(var data in sSource)
+            {
+                result.Add(data);
+            }
+            return result;
+        }
+
         /// <summary>
         /// Читаем настройки из XML-файла
         /// </summary>

@@ -165,6 +165,45 @@ namespace ReleaseControlLib
             
         }
         /// <summary>
+        /// Импортировать данные
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string ImportData(string path)
+        {
+            try
+            {
+                Apps.Clear();
+                if (File.Exists(path))
+                {
+                    XDocument xdoc = XDocument.Load(path);
+                    var counter = 0;
+                    foreach (XElement app in xdoc.Element("Applications").Elements("App"))
+                    {
+                        XElement name = app.Element("Name");
+                        XElement workFolder = app.Element("WorkFolderPath");
+                        XElement releaseFolder = app.Element("ReleaseFolderPath");
+                        XElement reestrFolder = app.Element("ReestrFolderPath");
+                        ControlledApp tApp = ControlledApp.AddApp(
+                            name.Value.ToString(),
+                            workFolder.Value == null ? "" : workFolder.Value.ToString(),
+                            releaseFolder == null ? "" : releaseFolder.Value.ToString(),
+                            reestrFolder == null ? "" : reestrFolder.Value.ToString(),
+                            counter
+                            );
+                        counter++;
+                        Apps.Add(tApp);
+                    }
+                }
+                return "OK";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+
+        }
+        /// <summary>
         /// Добавить новую запись в БД
         /// </summary>
         /// <param name="app"></param>
@@ -446,6 +485,23 @@ namespace ReleaseControlLib
                 return ex.Message;
             }
             
+        }
+        public static string ExprotToXml(string path)
+        {
+            try
+            {
+                string errors = "";
+                //string temp = FilePath;
+                FilePath = path;
+                errors+= SaveToXml();
+                //FilePath = temp;
+                return errors;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+
         }
         /// <summary>
         /// Удалить приложение

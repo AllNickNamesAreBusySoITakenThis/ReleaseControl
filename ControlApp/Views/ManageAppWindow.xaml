@@ -5,8 +5,35 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ControlApp"
         mc:Ignorable="d"
-        Title="ManageAppWindow" Height="450" Width="800">
+        Title="ManageAppWindow" Height="auto" Width="800" WindowStartupLocation="CenterOwner"
+		local:DialogCloser.DialogResult="{Binding DialogResult}" SizeToContent="Height">
+	<Window.DataContext>
+		<local:ManageAppWindowViewModel/>
+	</Window.DataContext>
     <Grid>
-        
-    </Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+			<RowDefinition Height="auto"/>
+		</Grid.RowDefinitions>
+		<TextBlock Grid.Row="0" HorizontalAlignment="Left" Margin="5,5,5,5" Text="Имя приложения"/>
+		<TextBox Grid.Row="0" Margin="120,5,5,5" Text="{Binding Path = CurrentApp.Name}"/>
+		
+		<TextBlock Grid.Row="1" HorizontalAlignment="Left" Margin="5,5,5,5" Text="Рабочая папка"/>
+		<TextBox Grid.Row="1" Margin="120,5,70,5" Text="{Binding Path = CurrentApp.WorkingReleasePath, UpdateSourceTrigger=LostFocus}"/>
+		<Button Grid.Row="1" HorizontalAlignment="Right" Margin="5,5,5,5" Content="..." Width="50" Command="{Binding OpenFileCommand}" CommandParameter="Work"/>
+
+		<TextBlock Grid.Row="2" HorizontalAlignment="Left" Margin="5,5,5,5" Text="Путь к релизу"/>
+		<TextBox Grid.Row="2" Margin="120,5,70,5" Text="{Binding Path = CurrentApp.ReleasePath}"/>
+		<Button Grid.Row="2" HorizontalAlignment="Right" Margin="5,5,5,5" Content="..." Width="50" Command="{Binding OpenFileCommand}" CommandParameter="Release"/>
+
+		<TextBlock Grid.Row="3" HorizontalAlignment="Left" Margin="5,5,5,5" Text="Путь к реестру"/>
+		<TextBox Grid.Row="3" Margin="120,5,70,5" Text="{Binding Path = CurrentApp.ReestrPath}"/>
+		<Button Grid.Row="3" HorizontalAlignment="Right" Margin="5,5,5,5" Content="..." Width="50" Command="{Binding OpenFileCommand}" CommandParameter="Reestr"/>
+
+		<Button Grid.Row="4" Content="Подтвердить" Command="{Binding ConfirmCommand}" CommandParameter="{Binding}" HorizontalAlignment="Right" Width="120" Margin="5,5,135,5" Height="25"/>
+		<Button Grid.Row="4" Content="Отмена" Command="{Binding DiscardCommand}" HorizontalAlignment="Right" Width="120" Margin="5,5,5,5" Height="25"/>
+	</Grid>
 </Window>

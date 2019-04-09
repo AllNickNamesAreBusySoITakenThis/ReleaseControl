@@ -57,6 +57,7 @@
     <Compile Include="ControlledApp.cs" />
     <Compile Include="ControlledFile.cs" />
     <Compile Include="HashService.cs" />
+    <Compile Include="NotificatorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageService.cs" />
   </ItemGroup>

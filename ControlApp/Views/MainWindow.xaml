@@ -5,7 +5,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:ControlApp"
 		mc:Ignorable="d"
-		Title="Контроль релизов" Height="450" Width="800" FontFamily="Verdana" FontSize="16">
+		Title="Контроль релизов" Height="450" Width="800" FontFamily="Verdana" FontSize="16" Icon="/ControlApp;component/Images/Applications.ico">
 	<Window.DataContext>
 		<local:MainWindowViewModel/>
 	</Window.DataContext>
@@ -20,11 +20,51 @@
 		</Grid.RowDefinitions>
 		<Menu x:Name="menu" Height="25" FontFamily="Verdana" FontSize="16" Background="White">
 			<MenuItem Header="Файл" VerticalAlignment="Center" Margin="1" >
-				<MenuItem Header="Добавить приложение" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding AddAppCommand}"/>
-				<MenuItem Header="Настройки" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ShowSettingsCommand}"/>
-				<MenuItem Header="Экспорт" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ExportCommand}"/>
-				<MenuItem Header="Импорт" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ImportCommand}"/>
-				<MenuItem Header="Выход" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ExitCommand}"/>
+				<MenuItem Header="Добавить приложение" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding AddAppCommand}" >
+					<MenuItem.Icon>
+						<Image>
+							<Image.Source>
+								<BitmapImage UriSource="/ControlApp;component/Images/add (1).png"/>
+							</Image.Source>
+						</Image>
+					</MenuItem.Icon>
+				</MenuItem>
+				<MenuItem Header="Настройки" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ShowSettingsCommand}">
+					<MenuItem.Icon>
+					<Image>
+						<Image.Source>
+							<BitmapImage UriSource="/ControlApp;component/Images/Gear.png"/>
+						</Image.Source>
+					</Image>
+					</MenuItem.Icon>
+				</MenuItem>
+				<MenuItem Header="Экспорт" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ExportCommand}">
+					<MenuItem.Icon>
+						<Image>
+						<Image.Source>
+							<BitmapImage UriSource="/ControlApp;component/Images/export.png"/>
+						</Image.Source>
+					</Image>
+					</MenuItem.Icon>
+				</MenuItem>
+				<MenuItem Header="Импорт" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ImportCommand}">
+					<MenuItem.Icon>
+						<Image>
+							<Image.Source>
+								<BitmapImage UriSource="/ControlApp;component/Images/document.png"/>
+							</Image.Source>
+						</Image>
+					</MenuItem.Icon>
+				</MenuItem>
+				<MenuItem Header="Выход" Background="{Binding Background, ElementName=menu}" BorderThickness="2" Command="{Binding ExitCommand}">
+					<MenuItem.Icon>
+						<Image>
+							<Image.Source>
+								<BitmapImage UriSource="/ControlApp;component/Images/cross.png"/>
+							</Image.Source>
+						</Image>
+					</MenuItem.Icon>
+				</MenuItem>
 			</MenuItem>
 		</Menu>
 		<DataGrid x:Name="dataGrid" Grid.Row="1" ItemsSource="{Binding MyApps, Mode=TwoWay}" AutoGenerateColumns="False" 

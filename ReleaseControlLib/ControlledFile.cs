@@ -100,17 +100,18 @@ namespace ReleaseControlLib
             CurrentHash = HashService.ComputeMD5Checksum(Parent.WorkingReleasePath + System.IO.Path.DirectorySeparatorChar + path);
             ReleaseHash = HashService.ComputeMD5Checksum(Parent.ReleasePath + System.IO.Path.DirectorySeparatorChar + path);
         }
-        public static List<ControlledFile> GetFilesList(string root, ControlledApp parent)
+        public static Task<List<ControlledFile>> GetFilesList(string root, ControlledApp parent)
         {
             try
             {
-                List<ControlledFile> result = new List<ControlledFile>();
+                System.Func<List<ControlledFile>> myFunction = GetList;
+                Task<List<ControlledFile>> result = new Task<List<ControlledFile>>(myFunction);
                 DirectoryInfo di = new DirectoryInfo(root);
                 foreach(var f in di.EnumerateFiles().ToList())
                 {
                     if(!StorageService.ForbiddenExt.Contains(f.Extension))
                     {
-                        result.Add(new ControlledFile()
+                        result.Result.Add(new ControlledFile()
                         {
                             Parent = parent,
                             Path = f.FullName.Replace(parent.WorkingReleasePath + System.IO.Path.DirectorySeparatorChar, "")
@@ -122,7 +123,7 @@ namespace ReleaseControlLib
                     var temp = GetFilesList(string.Format("{0}{1}{2}", root, System.IO.Path.DirectorySeparatorChar, d.Name),parent);
                     if(temp!=null)
                     {
-                        result.AddRange(temp);
+                        result.Result.AddRange(temp.Result);
                     }
                 }
                 return result;
@@ -133,5 +134,9 @@ namespace ReleaseControlLib
             }
         }
 
+        static List<ControlledFile> GetList()
+        {
+            return new List<ControlledFile>();
+        }
     }
 }

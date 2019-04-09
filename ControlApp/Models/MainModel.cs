@@ -32,7 +32,8 @@ namespace ControlApp
         public async static void GetApps()
         {
             string result = "";
-            await new Task(()=>StorageService.Get());
+            Task task = new Task(new Action(() => StorageService.Get()));
+            
             //if (result != "OK")
             //{
             //    logger.Error("Ошибка при получени данных: {0}", result);
@@ -65,7 +66,7 @@ namespace ControlApp
             window.Owner = App.Current.MainWindow;
             if (window.ShowDialog() == true)
             {
-                StorageService.Apps.Add(ControlledApp.AddApp(TempApp.Name, TempApp.WorkingReleasePath, TempApp.ReleasePath, TempApp.ReestrPath,StorageService.Apps.Count));
+                StorageService.Apps.Add(ControlledApp.AddApp(TempApp.Name, TempApp.WorkingReleasePath, TempApp.ReleasePath, TempApp.ReestrPath,StorageService.Apps.Count).Result);
                 StorageService.Save();
             }
             else

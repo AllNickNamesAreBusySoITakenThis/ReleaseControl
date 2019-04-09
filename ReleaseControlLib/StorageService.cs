@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Xml;
-using System.Xml.Linq;
-using System.Data.SqlClient;
 using System.Data.OleDb;
-using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
+using System.IO;
+using System.Xml.Linq;
 
 namespace ReleaseControlLib
 {
@@ -36,7 +31,7 @@ namespace ReleaseControlLib
                 apps = value;
             }
         }
-        
+
         static StorageService()
         {
             ForbiddenExt.CollectionChanged += ForbiddenExt_CollectionChanged;
@@ -48,11 +43,11 @@ namespace ReleaseControlLib
 
         static void CheckData()
         {
-            foreach(var app in Apps)
+            foreach (var app in Apps)
             {
-                for(int i=0;i<app.Files.Count;i++)
+                for (int i = 0; i < app.Files.Count; i++)
                 {
-                    if(ForbiddenExt.Contains(new FileInfo(app.WorkingReleasePath+Path.DirectorySeparatorChar+app.Files[i].Path).Extension))
+                    if (ForbiddenExt.Contains(new FileInfo(app.WorkingReleasePath + Path.DirectorySeparatorChar + app.Files[i].Path).Extension))
                     {
                         app.Files.RemoveAt(i);
                         i = -1;
@@ -64,7 +59,7 @@ namespace ReleaseControlLib
         /// Получить данные из базы данных
         /// </summary>
         /// <returns></returns>
-        static string GetDataFromDb()
+        static async void GetDataFromDb()
         {
             try
             {
@@ -73,14 +68,15 @@ namespace ReleaseControlLib
                 {
                     case ConnectionTypes.OleDb:
                         OleDbConnection oleDbConnection = new OleDbConnection();
-                        oleDbConnection.ConnectionString = string.Format("Provider={0}; Data Source={1};User ID={2};Password={3};Connection Timeout=3; ",Provider, Server, User, Password);
+                        oleDbConnection.ConnectionString = string.Format("Provider={0}; Data Source={1};User ID={2};Password={3};Connection Timeout=3; ", Provider, Server, User, Password);
                         oleDbConnection.Open();
                         OleDbCommand oleDbCommand = oleDbConnection.CreateCommand();
                         oleDbCommand.CommandText = string.Format("SELECT Name, WorkFolder, ReleaseFolder, ReestrFolder, ID From {0}", Table);
                         OleDbDataReader oleDbDataReader = oleDbCommand.ExecuteReader();
                         while (oleDbDataReader.Read())
                         {
-                            Apps.Add(ControlledApp.AddApp(oleDbDataReader["Name"].ToString(), oleDbDataReader["WorkFolder"].ToString(), oleDbDataReader["ReleaseFolder"].ToString(), oleDbDataReader["ReestrFolder"].ToString(), Convert.ToInt32(oleDbDataReader["ID"].ToString())));
+                            ControlledApp tmp = await 
+                            Apps.Add(await ControlledApp.AddApp(oleDbDataReader["Name"].ToString(), oleDbDataReader["WorkFolder"].ToString(), oleDbDataReader["ReleaseFolder"].ToString(), oleDbDataReader["ReestrFolder"].ToString(), Convert.ToInt32(oleDbDataReader["ID"].ToString())).Result);
                         }
                         oleDbConnection.Close();
                         break;
@@ -93,7 +89,7 @@ namespace ReleaseControlLib
                         MySqlDataReader mySqlDataReader = mySqlCommand.ExecuteReader();
                         while (mySqlDataReader.Read())
                         {
-                            Apps.Add(ControlledApp.AddApp(mySqlDataReader["Name"].ToString(), mySqlDataReader["WorkFolder"].ToString().Replace('+',Path.DirectorySeparatorChar ), mySqlDataReader["ReleaseFolder"].ToString().Replace('+', Path.DirectorySeparatorChar), mySqlDataReader["ReestrFolder"].ToString().Replace('+', Path.DirectorySeparatorChar), Convert.ToInt32(mySqlDataReader["ID"].ToString())));
+                            Apps.Add(ControlledApp.AddApp(mySqlDataReader["Name"].ToString(), mySqlDataReader["WorkFolder"].ToString().Replace('+', Path.DirectorySeparatorChar), mySqlDataReader["ReleaseFolder"].ToString().Replace('+', Path.DirectorySeparatorChar), mySqlDataReader["ReestrFolder"].ToString().Replace('+', Path.DirectorySeparatorChar), Convert.ToInt32(mySqlDataReader["ID"].ToString())).Result);
                         }
                         mySqlConnection.Close();
                         break;
@@ -109,22 +105,22 @@ namespace ReleaseControlLib
                         SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
                         while (sqlDataReader.Read())
                         {
-                            Apps.Add(ControlledApp.AddApp(sqlDataReader["Name"].ToString(), sqlDataReader["WorkFolder"].ToString(), sqlDataReader["ReleaseFolder"].ToString(), sqlDataReader["ReestrFolder"].ToString(), Convert.ToInt32(sqlDataReader["ID"].ToString())));
+                            Apps.Add(ControlledApp.AddApp(sqlDataReader["Name"].ToString(), sqlDataReader["WorkFolder"].ToString(), sqlDataReader["ReleaseFolder"].ToString(), sqlDataReader["ReestrFolder"].ToString(), Convert.ToInt32(sqlDataReader["ID"].ToString())).Result);
                         }
                         sqlConnection.Close();
                         break;
                 }
-                foreach(var app in Apps)
+                foreach (var app in Apps)
                 {
                     app.ExistInDb = true;
                 }
-                return "OK";
+
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return ex.Message;
+
             }
-            
+
         }
         /// <summary>
         /// Получить данные о приложениях из XML файла
@@ -147,11 +143,11 @@ namespace ReleaseControlLib
                         XElement reestrFolder = app.Element("ReestrFolderPath");
                         ControlledApp tApp = ControlledApp.AddApp(
                             name.Value.ToString(),
-                            workFolder.Value==null?"":workFolder.Value.ToString(),
-                            releaseFolder==null?"":releaseFolder.Value.ToString(),
-                            reestrFolder==null?"":reestrFolder.Value.ToString(),
+                            workFolder.Value == null ? "" : workFolder.Value.ToString(),
+                            releaseFolder == null ? "" : releaseFolder.Value.ToString(),
+                            reestrFolder == null ? "" : reestrFolder.Value.ToString(),
                             counter
-                            );
+                            ).Result;
                         counter++;
                         Apps.Add(tApp);
                     }
@@ -162,7 +158,7 @@ namespace ReleaseControlLib
             {
                 return ex.Message;
             }
-            
+
         }
         /// <summary>
         /// Импортировать данные
@@ -190,7 +186,7 @@ namespace ReleaseControlLib
                             releaseFolder == null ? "" : releaseFolder.Value.ToString(),
                             reestrFolder == null ? "" : reestrFolder.Value.ToString(),
                             counter
-                            );
+                            ).Result;
                         counter++;
                         Apps.Add(tApp);
                     }
@@ -228,7 +224,7 @@ namespace ReleaseControlLib
                         mySqlConnection.ConnectionString = string.Format("host={0};port={1};User Id={2};database={3};password={4};character set=utf8", Server, Port, User, Database, Password);
                         mySqlConnection.Open();
                         MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
-                        mySqlCommand.CommandText = string.Format("INSERT {0} (Name, WorkFolder, ReleaseFolder, ReestrFolder) VALUES ('{1}' ,'{2}', '{3}', '{4}')", Table, app.Name, app.WorkingReleasePath.Replace(Path.DirectorySeparatorChar,'+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'));
+                        mySqlCommand.CommandText = string.Format("INSERT {0} (Name, WorkFolder, ReleaseFolder, ReestrFolder) VALUES ('{1}' ,'{2}', '{3}', '{4}')", Table, app.Name, app.WorkingReleasePath.Replace(Path.DirectorySeparatorChar, '+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'), app.ReleasePath.Replace(Path.DirectorySeparatorChar, '+'));
                         mySqlCommand.ExecuteNonQuery();
                         mySqlConnection.Close();
                         break;
@@ -332,8 +328,8 @@ namespace ReleaseControlLib
                         break;
                     case ConnectionTypes.Sql:
                         SqlConnection sqlConnection = new SqlConnection();
-                        if(Password!="")
-                            sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server,  User, Database, Password);
+                        if (Password != "")
+                            sqlConnection.ConnectionString = string.Format("Data Source={0};User ={1};Initial Catalog={2};Password={3}; Integrated Security = false;", Server, User, Database, Password);
                         else
                             sqlConnection.ConnectionString = string.Format("Data Source={0};Initial Catalog={1}; Integrated Security = True;", Server, Database);
                         sqlConnection.Open();
@@ -382,8 +378,8 @@ namespace ReleaseControlLib
             {
                 return ex.Message;
             }
-            
-        }        
+
+        }
         /// <summary>
         /// Проверка на полноту введенных данных
         /// </summary>
@@ -391,10 +387,10 @@ namespace ReleaseControlLib
         public static bool CheckSettings()
         {
             //bool verdict = true;
-            switch(StorageType)
+            switch (StorageType)
             {
                 case StorageTypes.Database:
-                    switch(ConnectionType)
+                    switch (ConnectionType)
                     {
                         case ConnectionTypes.OleDb:
                             if (Provider == "")
@@ -403,15 +399,15 @@ namespace ReleaseControlLib
                         case ConnectionTypes.OracleMySql:
                             if (Port == "")
                                 return false;
-                            break;                        
+                            break;
                     }
-                    if (Server == "" | Database == "" | Table == "" | (User == "" & Password != "") | (User != "" & Password==""))
+                    if (Server == "" | Database == "" | Table == "" | (User == "" & Password != "") | (User != "" & Password == ""))
                     {
                         return false;
                     }
                     break;
                 case StorageTypes.XML:
-                    if(FilePath=="")
+                    if (FilePath == "")
                     {
                         return false;
                     }
@@ -427,7 +423,7 @@ namespace ReleaseControlLib
         {
             try
             {
-                switch(StorageType)
+                switch (StorageType)
                 {
                     case StorageTypes.Database:
                         return GetDataFromDb();
@@ -436,7 +432,7 @@ namespace ReleaseControlLib
                 }
                 return "OK";
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return ex.Message;
             }
@@ -450,7 +446,7 @@ namespace ReleaseControlLib
             try
             {
                 string errors = "";
-                if(CheckSettings())
+                if (CheckSettings())
                 {
                     switch (StorageType)
                     {
@@ -484,7 +480,7 @@ namespace ReleaseControlLib
             {
                 return ex.Message;
             }
-            
+
         }
         public static string ExprotToXml(string path)
         {
@@ -493,7 +489,7 @@ namespace ReleaseControlLib
                 string errors = "";
                 //string temp = FilePath;
                 FilePath = path;
-                errors+= SaveToXml();
+                errors += SaveToXml();
                 //FilePath = temp;
                 return errors;
             }
@@ -512,15 +508,15 @@ namespace ReleaseControlLib
         {
             try
             {
-                for(int i=0;i<Apps.Count;i++)
+                for (int i = 0; i < Apps.Count; i++)
                 {
-                    if(appToRemove==Apps[i])
+                    if (appToRemove == Apps[i])
                     {
                         Apps.RemoveAt(i);
                         break;
                     }
                 }
-                switch(StorageType)
+                switch (StorageType)
                 {
                     case StorageTypes.Database:
                         RemoveDataFormDb(appToRemove);
@@ -531,7 +527,7 @@ namespace ReleaseControlLib
                 }
                 return "OK";
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return ex.Message;
             }
@@ -544,7 +540,7 @@ namespace ReleaseControlLib
         {
             try
             {
-                if(CheckSettings())
+                if (CheckSettings())
                 {
                     switch (ConnectionType)
                     {
@@ -604,7 +600,7 @@ namespace ReleaseControlLib
                     return "Настройка произведена не полностью";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return ex.Message;
             }

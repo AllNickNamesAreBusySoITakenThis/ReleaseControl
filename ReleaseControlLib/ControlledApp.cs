@@ -146,7 +146,7 @@ namespace ReleaseControlLib
         /// <param name="workFolderPath"></param>
         /// <param name="relFolderPath"></param>
         /// <returns></returns>
-        public static ControlledApp AddApp(string name, string workFolderPath, string relFolderPath, string reestrPath, int id)
+        public async static Task<ControlledApp> AddApp(string name, string workFolderPath, string relFolderPath, string reestrPath, int id)
         {
             try
             {
@@ -157,7 +157,7 @@ namespace ReleaseControlLib
                 result.ReestrPath = reestrPath;
                 result.Id = id;
                 var dir = new DirectoryInfo(workFolderPath);
-                result.Files = new ObservableCollection<ControlledFile>(ControlledFile.GetFilesList(workFolderPath, result));
+                result.Files = new ObservableCollection<ControlledFile>(await ControlledFile.GetFilesList(workFolderPath, result));
                 return result;
             }
             catch (Exception ex)
